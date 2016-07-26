@@ -1,0 +1,23 @@
+<template id="hello-world-template">
+  <div class="hello-world">
+    <h1>Hello, World!</h1>
+  </div>
+</template>
+
+<script>
+  var HelloWorldProto = Object.create(HTMLElement.prototype);
+  // this is a deviation from the native spec
+  // the polyfill uses _currentScript rather than currentScript
+  var importDoc = document._currentScript.ownerDocument;
+
+  HelloWorldProto.createdCallback = function() {
+    var template = importDoc.getElementById('hello-world-template');
+    var clone = importDoc.importNode(template.content, true);
+    this.appendChild(clone);
+
+  }
+
+  document.registerElement('hello-world', {
+    prototype: HelloWorldProto
+  });
+</script>

@@ -1,0 +1,145 @@
+<script src="https://js.pusher.com/3.1/pusher.min.js"></script>
+
+<template id="pusher-chat-template">
+  <style type="text/css">
+    h3 {
+      text-align: center;
+      font-weight: normal;
+    }
+
+    #messages {
+      list-style: none;
+      margin: 20px 0 0 0;
+      padding: 0;
+    }
+
+    #messages li {
+      display: block;
+      margin: 5px 0;
+      background: #eee;
+      padding: 15px;
+    }
+
+    #messages li p {
+      background: #fff;
+      margin: 10px 10px 10px 0;
+      font-size: 16px;
+      padding: 20px;
+    }
+
+    #messages span {
+      display: block;
+      font-style: italic;
+    }
+
+    #pusher-chat-form {
+      width: 100%;
+      border-bottom: 1px solid #111;
+      padding-bottom: 20px;
+      position: relative;
+    }
+
+    #pusher-chat-form button {
+      right: 5px;
+      top: 0px;
+      position: absolute;
+      border: 1px solid #549eff;
+      width: 90px;
+      padding: 10px;
+      text-align: center;
+      background: white;
+      font-size: 16px;
+      border-radius: 3px;
+    }
+
+    #pusher-chat-form button:hover {
+      background: #549eff;
+      cursor: pointer;
+    }
+
+    #pusher-chat-form input {
+      width: 600px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #549eff;
+    }
+
+  </style>
+
+  <div id="pusher-chat-box">
+    <h3>Pusher Chat</h3>
+    <form id="pusher-chat-form">
+      <input type="text" placeholder="Hello!" />
+      <button type="submit">Send!</button>
+    </form>
+
+    <ul id="messages">
+      <li data-no-messages="true">No messages yet...</li>
+    </ul>
+
+  </div>
+</template>
+
+<script>
+  var PusherChatProto = Object.create(HTMLElement.prototype);
+  var importDoc = document._currentScript.ownerDocument;
+  var pusherInstance;
+
+  PusherChatProto.handleFormSubmit = function(form, username) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      fetch('http://localhost:4567/messages', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: form.querySelector('input').value,
+          username: username,
+          time: new Date()
+        })
+      });
+
+      form.querySelector('input').value = '';
+    }, true);
+  }
+
+  PusherChatProto.handlePusherMessage = function(data) {
+    var noMessages = this.shadowRoot.querySelector('[data-no-messages]');
+    if (noMessages) noMessages.parentNode.removeChild(noMessages);
+
+    var li = document.createElement('li');
+    li.classList.add('chat-message');
+    var userSpan = document.createElement('span');
+    userSpan.textContent = 'From: ' + data.username;
+    var textP = document.createElement('p');
+    textP.textContent = data.text;
+
+    li.appendChild(userSpan);
+    li.appendChild(textP);
+
+    this.shadowRoot.querySelector('#messages').appendChild(li);
+  }
+
+  PusherChatProto.createdCallback = function() {
+    var template = importDoc.getElementById('pusher-chat-template');
+    var clone = importDoc.importNode(template.content, true);
+    this.shadowRoot = this.createShadowRoot();
+    this.shadowRoot.appendChild(clone);
+
+    pusherInstance = new Pusher('c5025a4d323becdd404b');
+
+    var form = this.shadowRoot.querySelector('#pusher-chat-form');
+    this.handleFormSubmit(form, this.getAttribute('name'));
+
+    var channel = pusherInstance.subscribe('messages');
+    channel.bind('new_message', function(data) {
+      this.handlePusherMessage(data);
+    }.bind(this));
+  }
+
+  document.registerElement('pusher-chat', {
+    prototype: PusherChatProto
+  });
+</script>

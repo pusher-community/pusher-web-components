@@ -1,0 +1,17 @@
+.wrapper {
+  max-width: 800px;
+  margin: 30px auto;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+h3 {
+  font-weight: normal;
+}
+
+.header {
+  text-align: center;
+}
+
+.header img {
+  width: 100%;
+}
