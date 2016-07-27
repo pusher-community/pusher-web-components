@@ -83,7 +83,6 @@
 <script>
   var PusherChatProto = Object.create(HTMLElement.prototype);
   var importDoc = document._currentScript.ownerDocument;
-  var pusherInstance;
 
   PusherChatProto.handleFormSubmit = function(form, username) {
     form.addEventListener('submit', function(e) {
@@ -128,7 +127,7 @@
     this.shadowRoot = this.createShadowRoot();
     this.shadowRoot.appendChild(clone);
 
-    pusherInstance = new Pusher('c5025a4d323becdd404b');
+    var pusherInstance = new Pusher('c5025a4d323becdd404b');
 
     var form = this.shadowRoot.querySelector('#pusher-chat-form');
     this.handleFormSubmit(form, this.getAttribute('name'));
